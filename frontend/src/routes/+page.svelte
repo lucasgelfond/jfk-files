@@ -129,10 +129,19 @@
     init();
   });
 </script>
-
 <Modal 
   show={$modalStore}
-  styleWindow={{ width: '90vw', height: '80vh', maxWidth: 'none', marginBottom: '15vh', backgroundColor: 'black', color: 'white', border: '1px solid white', borderRadius: '0.5rem', overflow: 'hidden' }}
+  styleWindow={{ 
+    width: '90vw', 
+    height: 'min(80vh, 100vh)', 
+    maxWidth: 'none',
+    backgroundColor: 'black', 
+    color: 'white', 
+    border: '1px solid white', 
+    borderRadius: '0.5rem', 
+    overflow: 'hidden',
+    margin: '0'
+  }}
   styleContent={{ height: '100%' }}
   styleBg={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
   styleCloseButton={{ 
@@ -154,51 +163,48 @@
     content: '"×"'
   }}
 >
-  <div class="flex flex-col w-full h-full min-h-full flex-grow text-white bg-black">
+  <div class="flex flex-col w-full h-full min-h-full flex-grow text-white bg-black max-w-[100%]">
     <div class="sticky top-0 bg-black px-4 md:px-20 pt-8 md:pt-12 pb-4 z-10">
       <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white">
         The Searchable JFK Files 
       </h1>
+
+      <h2 class="text-sm mb-3 text-gray-300 max-w-[60vh] leading-relaxed">
+        Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>, and you can view the source <a href="https://github.com/lucasgelfond/jfk-files" class="text-blue-400 hover:underline">here</a>.
+      </h2>
+
+      <div class="flex gap-2">
+        <div class="py-2">
+          <input 
+            type="text"
+            class="border border-white rounded px-2 py-1 bg-black text-white"
+            placeholder="Enter text to search..."
+            bind:value={input}
+            on:keypress={handleKeyPress}
+            disabled={loading}
+          />
+          <button 
+            class="border border-white text-white px-4 py-1 rounded hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            on:click={() => handleSearch(input)}
+            disabled={loading}
+          >
+            {#if loading}
+              <span class="inline-block animate-spin">⟳</span>
+            {:else}
+              Search
+            {/if}
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="flex flex-row flex-1 bg-black text-white">
-      <div class="flex-1 px-4 md:px-20">
-        <h2 class="text-sm mb-3 text-gray-300 max-w-[60vh] leading-relaxed">
-          Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>, and you can view the source <a href="https://github.com/lucasgelfond/jfk-files" class="text-blue-400 hover:underline">here</a>.
-        </h2>
-
-        <div class="flex gap-2">
-          <div class="py-2">
-            <input 
-              type="text"
-              class="border border-white rounded px-2 py-1 bg-black text-white"
-              placeholder="Enter text to search..."
-              bind:value={input}
-              on:keypress={handleKeyPress}
-              disabled={loading}
-            />
-            <button 
-              class="border border-white text-white px-4 py-1 rounded hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              on:click={() => handleSearch(input)}
-              disabled={loading}
-            >
-              {#if loading}
-                <span class="inline-block animate-spin mr-1">⟳</span>
-                Searching...
-              {:else}
-                Search
-              {/if}
-            </button>
-          </div>
-        </div>
-
-        <div class="overflow-y-auto pb-8 max-h-[400px] md:pb-40">
-          <SearchResults 
-            results={result} 
-            recordMap={$recordMap} 
-            modalStore={modalStore} 
-          />
-        </div>
+    <div class="flex flex-row flex-1 bg-black text-white overflow-hidden">
+      <div class="flex-1 px-4 md:px-20 overflow-y-auto">
+        <SearchResults 
+          results={result} 
+          recordMap={$recordMap} 
+          modalStore={modalStore} 
+        />
       </div>
     </div>
   </div>
