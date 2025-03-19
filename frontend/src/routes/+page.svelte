@@ -168,10 +168,13 @@
       <h1 class="text-4xl md:text-5xl font-bold mb-6 text-wrap text-white">
         The JFK Files 
       </h1>
-
-      <h2 class="text-sm mb-5 text-gray-300 max-w-[60vh] leading-relaxed">
-        Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>.
+      <h2 class="text-sm mb-5 text-gray-300 max-w-[60vh] leading-relaxed italic">
+        <a href="http://jfkfiles.exposed" class="underline">www.jfkfiles.exposed</a>
       </h2>
+
+      <h3 class="text-sm mb-5 text-gray-300 max-w-[60vh] leading-relaxed">
+        Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>.
+      </h3>
 
       <div class="max-w-[60vh]">
         <div class="flex w-full gap-2">
