@@ -20,8 +20,11 @@ def save_concatenated_pages():
     output_dir.mkdir(exist_ok=True)
     
     # Get all records
-    records = supabase.table('record').select('*').execute()
-    
+    records = supabase.table('record')\
+        .select('*')\
+        .is_('in_anything_llm', 'null')\
+        .execute()
+        
     for record in records.data:
         record_id = record['id']
         record_number = record['record_number']
