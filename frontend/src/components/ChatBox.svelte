@@ -82,6 +82,7 @@
     currentMessage = '';
 
     try {
+        // not ideal but we leak API keys if not 
       const response = await fetch('https://jfk-files-production.up.railway.app/api/v1/chat', {
         method: 'POST',
         headers: {
