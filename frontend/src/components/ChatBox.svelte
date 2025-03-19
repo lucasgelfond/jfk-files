@@ -80,11 +80,13 @@
     currentMessage = '';
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/chat', {
+      const response = await fetch('https://jfk-files-production.up.railway.app/api/v1/chat', {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          'accept': 'application/json', 
           'Content-Type': 'application/json',
+          'credentials': 'include',
+          'mode': 'cors'
         },
         body: JSON.stringify({
           message: userMessage,

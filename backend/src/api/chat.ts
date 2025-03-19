@@ -5,7 +5,7 @@ dotenv.config();
 
 const IS_PRODUCTION = !process.env.IS_DEV;
 const BASE_URL = IS_PRODUCTION
-  ? "http://anythingllm.railway.internal"
+  ? "anythingllm.railway.internal"
   : "https://anythingllm-production-047a.up.railway.app";
 const router = express.Router();
 
