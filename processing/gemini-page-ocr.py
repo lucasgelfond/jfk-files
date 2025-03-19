@@ -139,6 +139,14 @@ def process_pdf(pdf_path: str):
         
         def process_single_page(page_num):
             thread_name = threading.current_thread().name
+            
+            # Check if page already exists and has OCR + cloudinary data
+            result = supabase.table('page').select('*').eq('parent_record_id', record_id).eq('page_number', page_num).execute()
+            if result.data and len(result.data) > 0:
+                page = result.data[0]
+                if page.get('cloudinary') and page.get('ocr_result'):
+                    print(f"{thread_name}: Page {page_num} already processed, skipping")
+                    return
             print(f"{thread_name}: Converting page {page_num}/{pdf_page_count}")
             
             try:

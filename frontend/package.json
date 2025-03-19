@@ -12,7 +12,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"generate-embeddings": "node scripts/generate-embeddings.js"
+		"generate-embeddings": "node scripts/generate-embeddings.js",
+		"fix-errors": "node scripts/fix-errors.js"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -47,6 +48,7 @@
 		"dotenv": "^16.4.7",
 		"papaparse": "^5.5.2",
 		"svelte-simple-modal": "^2.0.0",
+		"tesseract.js": "^6.0.0",
 		"utf-8-validate": "^6.0.5",
 		"uuid": "^11.1.0"
 	}
