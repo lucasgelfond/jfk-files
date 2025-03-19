@@ -10,13 +10,8 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-(async () => {
-	// Initialize the pipeline
-	const classifier = await pipeline('feature-extraction', 'Supabase/gte-small', {
-		dtype: 'fp32',
-		device: 'cpu'
-	});
-
+// Function to process rows
+async function processRows(classifier) {
 	// Get rows from page table that have OCR results but no embeddings yet
 	const { data: rows, error } = await supabase
 		.from('page')
@@ -26,6 +21,11 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 	if (error) {
 		console.error('Error fetching rows:', error);
+		return;
+	}
+
+	if (rows.length === 0) {
+		console.log('No new rows to process');
 		return;
 	}
 
@@ -61,5 +61,20 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 		}
 	}
 
-	console.log('Finished processing all rows');
+	console.log('Finished processing batch');
+}
+
+(async () => {
+	// Initialize the pipeline
+	const classifier = await pipeline('feature-extraction', 'Supabase/gte-small', {
+		dtype: 'fp32',
+		device: 'cpu'
+	});
+
+	// Run continuously with 1 minute interval
+	while (true) {
+		await processRows(classifier);
+		console.log('Waiting 1 minute before next check...');
+		await new Promise((resolve) => setTimeout(resolve, 60000));
+	}
 })().catch(console.error);
