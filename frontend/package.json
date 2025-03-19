@@ -38,5 +38,9 @@
 		"onlyBuiltDependencies": [
 			"esbuild"
 		]
+	},
+	"dependencies": {
+		"@huggingface/transformers": "^3.4.0",
+		"@supabase/supabase-js": "^2.49.1"
 	}
 }
