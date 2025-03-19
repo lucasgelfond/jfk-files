@@ -109,7 +109,11 @@
     <!-- Content column - fixed width for readability -->
     <div class="w-[500px] flex-none flex flex-col p-6 border-l border-white/20">
       <div class="flex-none">
-        <a href={record.pdf_link} class="text-blue-400 hover:underline" target="_blank">Download PDF</a>
+        <div class="text-2xl font-bold mb-4">Record {record.record_number}</div>
+        <div class="flex justify-between items-center">
+          <a href={record.pdf_link} class="text-blue-400 hover:underline" target="_blank">Download PDF</a>
+          <div>Page {$currentPageNumber} of {record.num_pages}</div>
+        </div>
       </div>
       
       <div class="flex-1 overflow-y-auto mt-6 h-full">
@@ -126,9 +130,9 @@
       on:touchstart={handleTouchStart}
       on:touchend={handleTouchEnd}
     >
-      {#if $allPages[$currentPageNumber]?.image_url}
+      {#if $allPages[$currentPageNumber]?.cloudinary.secure_url}
         <img 
-          src={$allPages[$currentPageNumber].image_url} 
+          src={$allPages[$currentPageNumber].cloudinary.secure_url} 
           alt="Page {$currentPageNumber}" 
           class="w-full h-full object-contain" 
         />

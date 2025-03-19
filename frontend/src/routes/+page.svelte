@@ -3,7 +3,7 @@
   import { writable } from 'svelte/store';
   import Modal from 'svelte-simple-modal';
   import SearchResults from '../components/SearchResults.svelte';
-  import { getRecordsSupabase, supabaseEmbed, supabaseResultsFromEmbedding } from '../utils/supabase';
+  import { getRecordsSupabase, searchSupabaseEmbedSearch, supabaseResultsFromEmbedding } from '../utils/supabase';
 
   let input = '';
   let result: any[] = [];
@@ -31,9 +31,7 @@
     if (loading) return;
     if (!embeddingOnDevice) {
       loading = true;
-      const embedding = await supabaseEmbed(query);
-      console.log('generated embedding from supabase: ', {embedding})
-      const results = await supabaseResultsFromEmbedding(query, embedding);
+      const results = await searchSupabaseEmbedSearch(query);
       result = results;
       loading = false;
       return;
@@ -166,7 +164,7 @@
     <div class="flex flex-row flex-1 bg-black text-white">
       <div class="flex-1 px-4 md:px-20">
         <h2 class="text-sm mb-3 text-gray-300 max-w-[60vh] leading-relaxed">
-          Sourced from 
+          Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>, and you can view the source <a href="https://github.com/lucasgelfond/jfk-files" class="text-blue-400 hover:underline">here</a>.
         </h2>
 
         <div class="flex gap-2">
