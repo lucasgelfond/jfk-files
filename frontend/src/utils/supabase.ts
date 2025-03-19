@@ -7,44 +7,27 @@ export const supabase = createClient(
 );
 
 /**
- * Fetches all issues from the database
- * @returns A record mapping issue IDs to issue objects
+ * Fetches all records from the database
+ * @returns A record mapping record IDs to record objects
  */
-export async function getIssuesSupabase(): Promise<Record<string, any>> {
+export async function getRecordsSupabase(): Promise<Record<string, any>> {
 	try {
-		// First try to get static issues
-		const response = await fetch('/issues.json');
-		const staticIssues = await response.json();
-
-		// If we have static issues, use those
-		if (staticIssues && staticIssues.length > 0) {
-			// console.log('Using static issues');
-			return staticIssues.reduce(
-				(acc, issue) => {
-					acc[issue.id] = issue;
-					return acc;
-				},
-				{} as Record<string, any>
-			);
-		}
-
-		// Fallback to Supabase if no static issues
-		console.log('No static issues found, falling back to Supabase');
-		const { data: issues, error } = await supabase
-			.from('issue')
+		const { data: records, error } = await supabase
+			.from('record')
 			.select('*')
-			.order('created_at', { ascending: false });
+			.order('created_at', { ascending: false })
+			.limit(1500);
 
 		if (error) {
-			console.error('Error fetching issues from Supabase:', error);
+			console.error('Error fetching records from Supabase:', error);
 			return {};
 		}
 
-		if (issues) {
-			console.log('Supabase Issues:', issues);
-			return issues.reduce(
-				(acc, issue) => {
-					acc[issue.id] = issue;
+		if (records) {
+			console.log('Supabase Records:', records);
+			return records.reduce(
+				(acc, record) => {
+					acc[record.id] = record;
 					return acc;
 				},
 				{} as Record<string, any>
@@ -53,7 +36,7 @@ export async function getIssuesSupabase(): Promise<Record<string, any>> {
 
 		return {};
 	} catch (err) {
-		console.error('Error fetching issues:', err);
+		console.error('Error fetching records:', err);
 		return {};
 	}
 }
