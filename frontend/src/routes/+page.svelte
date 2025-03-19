@@ -170,7 +170,7 @@
       </h1>
 
       <h2 class="text-sm mb-3 text-gray-300 max-w-[60vh] leading-relaxed">
-        Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>, and you can view the source <a href="https://github.com/lucasgelfond/jfk-files" class="text-blue-400 hover:underline">here</a>.
+        Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>.
       </h2>
 
       <div class="max-w-[60vh]">
