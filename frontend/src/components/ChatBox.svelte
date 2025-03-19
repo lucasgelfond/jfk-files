@@ -80,12 +80,11 @@
     currentMessage = '';
 
     try {
-      const response = await fetch('https://anythingllm-production-047a.up.railway.app/api/v1/workspace/jfk/chat', {
+      const response = await fetch('http://localhost:5000/api/v1/chat', {
         method: 'POST',
         headers: {
           'accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_ANYTHINGLLM_KEY}`
         },
         body: JSON.stringify({
           message: userMessage,
