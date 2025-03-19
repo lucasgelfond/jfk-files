@@ -165,7 +165,7 @@
 >
   <div class="flex flex-col w-full h-full min-h-full flex-grow text-white bg-black max-w-[100%]">
     <div class="sticky top-0 bg-black px-4 md:px-20 pt-8 md:pt-12 pb-4 z-10">
-      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white">
+      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-wrap text-white">
         The Searchable JFK Files 
       </h1>
 
