@@ -11,7 +11,7 @@ import PyPDF2
 import cloudinary
 import cloudinary.uploader
 import tempfile
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Future
 import threading
 from PIL import Image
 
@@ -116,35 +116,13 @@ def process_page(image: object, page_num: int, pdf_link: str, record_id: str) ->
             # Check if we got a valid response
             if not response.text:
                 error_msg = "Copyright detection or empty response"
-                # Store the error in the database
-                supabase.table('page').insert({
-                    'parent_record_id': record_id,
-                    'page_number': page_num,
-                    'ocr_result': f"ERROR: {error_msg}",
-                    'error': True  # Add this column to your schema
-                }).execute()
-                return page_num, error_msg
+                return page_num, error_msg, None
             
-            # Store successful result
-            supabase.table('page').insert({
-                'parent_record_id': record_id,
-                'page_number': page_num,
-                'ocr_result': response.text,
-                'error': False
-            }).execute()
-            
-            return page_num, None
+            return page_num, None, response.text
             
         except Exception as e:
             if attempt == max_retries - 1:
-                # Store the error in the database
-                supabase.table('page').insert({
-                    'parent_record_id': record_id,
-                    'page_number': page_num,
-                    'ocr_result': f"ERROR: {str(e)}",
-                    'error': True
-                }).execute()
-                return page_num, str(e)
+                return page_num, str(e), None
             time.sleep(retry_delay * (attempt + 1))
 
 def process_pdf(pdf_path: str):
@@ -187,18 +165,43 @@ def process_pdf(pdf_path: str):
                 print(f"{thread_name}: Failed to convert page {page_num}")
                 return
             
-            # Upload image to Cloudinary
-            cloudinary_result = upload_page_image(images[0], f"{Path(pdf_path).stem}_page_{page_num}")
-            if cloudinary_result:
-                # Store Cloudinary result in the database
-                supabase.table('page').insert({
-                    'parent_record_id': record_id,
-                    'page_number': page_num,
-                    'cloudinary': cloudinary_result
-                }).execute()
+            # First do OCR processing
+            page_num, error, ocr_result = process_page(images[0], page_num, pdf_link, record_id)
             
-            # Process the page
-            result = process_page(images[0], page_num, pdf_link, record_id)
+            # Then do Cloudinary upload
+            cloudinary_result = None
+            if not error:
+                cloudinary_result = upload_page_image(
+                    images[0], 
+                    f"{Path(pdf_path).stem}_page_{page_num}"
+                )
+            
+            # Insert all results in one go
+            page_data = {
+                'parent_record_id': record_id,
+                'page_number': page_num,
+            }
+            
+            if error:
+                page_data.update({
+                    'ocr_result': f"ERROR: {error}",
+                    'error': True
+                })
+            else:
+                page_data.update({
+                    'ocr_result': ocr_result,
+                    'error': False
+                })
+                
+            if cloudinary_result:
+                page_data['cloudinary'] = cloudinary_result
+                
+            supabase.table('page').insert(page_data).execute()
+            
+            if error:
+                print(f"{thread_name}: Error processing page {page_num}: {error}")
+            else:
+                print(f"{thread_name}: Successfully processed page {page_num}")
             
             # Clear the image from memory immediately
             images[0].close()
@@ -207,12 +210,6 @@ def process_pdf(pdf_path: str):
             # Force garbage collection
             import gc
             gc.collect()
-            
-            page_num, error = result
-            if error:
-                print(f"{thread_name}: Error processing page {page_num}: {error}")
-            else:
-                print(f"{thread_name}: Successfully processed page {page_num}")
             
         except Exception as e:
             print(f"{thread_name}: Error processing page {page_num}: {str(e)}")
@@ -225,7 +222,7 @@ def process_pdf(pdf_path: str):
         if page_num not in processed_pages
     ]
     
-    # Process pages with thread pool
+    # Process pages with thread pool - increased max_workers since we're not doing concurrent operations per page
     with ThreadPoolExecutor(max_workers=10) as executor:
         executor.map(process_single_page, pages_to_process)
         
