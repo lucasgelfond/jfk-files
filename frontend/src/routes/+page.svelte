@@ -166,25 +166,25 @@
   <div class="flex flex-col w-full h-full min-h-full flex-grow text-white bg-black max-w-[100%]">
     <div class="sticky top-0 bg-black px-4 md:px-20 pt-8 md:pt-12 pb-4 z-10">
       <h1 class="text-4xl md:text-5xl font-bold mb-6 text-wrap text-white">
-        The Searchable JFK Files 
+        The JFK Files 
       </h1>
 
       <h2 class="text-sm mb-3 text-gray-300 max-w-[60vh] leading-relaxed">
         Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>, and you can view the source <a href="https://github.com/lucasgelfond/jfk-files" class="text-blue-400 hover:underline">here</a>.
       </h2>
 
-      <div class="flex gap-2">
-        <div class="py-2">
+      <div class="max-w-[60vh]">
+        <div class="flex w-full gap-2">
           <input 
             type="text"
-            class="border border-white rounded px-2 py-1 bg-black text-white"
+            class="flex-1 border border-white rounded px-2 py-1 bg-black text-white"
             placeholder="Enter text to search..."
             bind:value={input}
             on:keypress={handleKeyPress}
             disabled={loading}
           />
           <button 
-            class="border border-white text-white px-4 py-1 rounded hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="border border-white text-white px-4 py-1 rounded hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             on:click={() => handleSearch(input)}
             disabled={loading}
           >
