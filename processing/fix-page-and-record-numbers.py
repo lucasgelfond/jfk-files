@@ -137,4 +137,27 @@ def fix_missing_records():
         except Exception as e:
             print(f"Error processing {filename}: {str(e)}")
 
+def fixLocalPDFLink():
+    # Get all records that have downloaded-pdfs in their link
+    records = supabase.table("record").select("*").like("pdf_link", "downloaded-pdfs%").execute()
+    
+    for record in records.data:
+        try:
+            # Extract filename from the local path
+            filename = record['pdf_link'].split('/')[-1]
+            
+            # Construct the correct archives.gov URL
+            correct_url = f"https://www.archives.gov/files/research/jfk/releases/2025/0318/{filename}"
+            
+            # Update the record with the correct URL
+            supabase.table("record").update({
+                "pdf_link": correct_url
+            }).eq("id", record['id']).execute()
+            
+            print(f"Fixed local PDF link for record {record['id']}: {correct_url}")
+            
+        except Exception as e:
+            print(f"Error fixing PDF link for record {record['id']}: {str(e)}")
+
 fix_missing_records()
+fixLocalPDFLink()
