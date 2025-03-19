@@ -90,7 +90,7 @@
         },
         body: JSON.stringify({
           message: userMessage,
-          mode: 'chat',
+          mode: 'query',
           sessionId: 'default-session',
           attachments: []
         })
