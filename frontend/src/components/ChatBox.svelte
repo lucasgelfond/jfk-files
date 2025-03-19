@@ -153,6 +153,9 @@
               <div 
                 class="ml-2 mt-2 cursor-pointer hover:bg-gray-700 p-2 rounded-lg border border-white/20 hover:border-white/40 transition-colors"
                 on:click={() => handleSourceClick(source)}
+                on:keydown={(e) => e.key === 'Enter' && handleSourceClick(source)}
+                role="button"
+                tabindex="0"
               >
                 <p class="font-medium text-sm md:text-xs">{source.title}</p>
                 <p class="text-xs md:text-[10px] italic">{source.chunk}</p>
@@ -172,7 +175,7 @@
       bind:value={currentMessage}
       on:keydown={handleKeyPress}
       disabled={loading}
-    />
+    ></textarea>
     <button
       class="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
       on:click={sendMessage}
