@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import Papa from 'papaparse';
 
 // Create Supabase client
 export const supabase = createClient(
@@ -12,6 +13,26 @@ export const supabase = createClient(
  */
 export async function getRecordsSupabase(): Promise<Record<string, any>> {
 	try {
+		// First try to get static records
+		const response = await fetch('/records.csv');
+		const csvText = await response.text();
+
+		const parseResult = Papa.parse(csvText, {
+			header: true,
+			dynamicTyping: true
+		});
+
+		if (parseResult.data && parseResult.data.length > 0) {
+			return parseResult.data.reduce(
+				(acc, record) => {
+					acc[record.id] = record;
+					return acc;
+				},
+				{} as Record<string, any>
+			);
+		}
+
+		// Fall back to Supabase if static records not available
 		const { data: records, error } = await supabase
 			.from('record')
 			.select('*')

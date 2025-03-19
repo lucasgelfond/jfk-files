@@ -2,7 +2,6 @@
     // Props
     export let item: any;
     export let recordMap: Record<string, any> = {};
-    console.log({item, recordMap})
     
     // Dispatch click event to parent
     import { createEventDispatcher } from 'svelte';
