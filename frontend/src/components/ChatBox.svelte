@@ -3,9 +3,12 @@
   import { createClient } from '@supabase/supabase-js';
   import { bind } from 'svelte-simple-modal';
   import ResultModal from './ResultModal.svelte';
+  import { createEventDispatcher } from 'svelte';
 
   // Props
   export let modalStore: any;
+  export let initialSearch: string | null = null;
+  export let results: any[] = [];
 
   const supabase = createClient(
     import.meta.env.VITE_SUPABASE_URL,
@@ -16,6 +19,8 @@
   let currentMessage = '';
   let loading = false;
   let recordMap: Record<string, any> = {};
+
+  const dispatch = createEventDispatcher();
 
   async function fetchSourcePages(sources: any[]) {
     if (!sources.length) return;
@@ -66,6 +71,8 @@
 
   async function sendMessage() {
     if (!currentMessage.trim() || loading) return;
+    
+    results = [];
     
     loading = true;
     messages = [...messages, { type: 'user', content: currentMessage }];
@@ -122,6 +129,13 @@
       sendMessage();
     }
   }
+
+  onMount(() => {
+    if (initialSearch) {
+      currentMessage = initialSearch;
+      sendMessage();
+    }
+  });
 </script>
 
 <div class="flex flex-col h-full w-full bg-black p-4">

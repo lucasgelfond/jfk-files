@@ -27,8 +27,12 @@ import {supabase} from '../utils/supabase';
   // Add this new state
   let showChat = false;
 
-  // Add this function to toggle chat
+  // Add initialSearch prop for ChatBox
+  let initialSearch: string | null = null;
+
+  // Modify toggleChat to handle search input
   function toggleChat() {
+    result = [];
     showChat = !showChat;
   }
 
@@ -38,6 +42,11 @@ import {supabase} from '../utils/supabase';
   }
   async function handleSearch(query: string) {
     if (loading) return;
+    
+    // Hide chat when searching
+    showChat = false;
+    initialSearch = null;
+
     if (!embeddingOnDevice) {
       loading = true;
       const results = await searchSupabaseEmbedSearch(query);
@@ -301,7 +310,10 @@ import {supabase} from '../utils/supabase';
       </button>
     </div>
     <div class="h-[calc(500px-40px)]">
-      <ChatBox modalStore={modalStore} />
+      <ChatBox 
+        modalStore={modalStore} 
+        initialSearch={input}
+      />
     </div>
   </div>
 {/if}
@@ -310,9 +322,9 @@ import {supabase} from '../utils/supabase';
 {#if !showChat}
   <button
     class="fixed bottom-4 right-4 z-50 bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
-    on:click={toggleChat}
+    on:click={() => {input = ''; toggleChat(); }}
   >
-    💬
+    Chat 
   </button>
 {/if}
 

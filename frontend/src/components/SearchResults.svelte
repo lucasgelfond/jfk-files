@@ -13,7 +13,9 @@
       const record = recordMap[item.parent_record_id];
       modalStore.set(bind(ResultModal, { item, record }));
     }
-  </script>
+
+
+</script>
   
   {#if results.length}
     <div class="mt-4 h-full">
