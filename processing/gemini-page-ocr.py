@@ -37,29 +37,19 @@ genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 # Initialize Gemini model
 model = genai.GenerativeModel('gemini-2.0-flash')
 
-def record_exists(pdf_link: str) -> bool:
-    """Check if a record already exists in the database"""
+def get_record_id(pdf_path: str) -> str:
+    """Get record ID from database based on filename"""
+    filename = Path(pdf_path).name
+    # Construct archives.gov URL
+    pdf_link = f"https://www.archives.gov/files/research/jfk/releases/2025/0318/{filename}"
+    
+    # Find record by pdf_link
     result = supabase.table('record').select('id').eq('pdf_link', pdf_link).execute()
-    return len(result.data) > 0
-
-def page_exists(record_id: str, page_num: int) -> bool:
-    """Check if a page already exists in the database"""
-    result = supabase.table('page').select('id').eq('parent_record_id', record_id).eq('page_number', page_num).execute()
-    return len(result.data) > 0
-
-def create_record(pdf_link: str) -> str:
-    """Create a record and return its ID"""
-    data = supabase.table('record').insert({
-        'pdf_link': pdf_link
-    }).execute()
-    return data.data[0]['id']
-
-def get_record_id(pdf_link: str) -> str:
-    """Get record ID from database, or create if doesn't exist"""
-    result = supabase.table('record').select('id').eq('pdf_link', pdf_link).execute()
-    if result.data:
-        return result.data[0]['id']
-    return create_record(pdf_link)
+    
+    if not result.data:
+        raise Exception(f"No record found for PDF {filename}")
+        
+    return result.data[0]['id']
 
 def get_processed_pages(record_id: str) -> set:
     """Get set of page numbers already processed for this record"""
@@ -129,104 +119,107 @@ def process_pdf(pdf_path: str):
     """Process a PDF file page by page and store results in Supabase"""
     print(f"Processing {pdf_path}")
     
-    # Get or create record
-    pdf_link = pdf_path
-    record_id = get_record_id(pdf_link)
-    print(f"Using record ID: {record_id}")
-    
-    # Check total pages
-    with open(pdf_path, 'rb') as pdf_file:
-        pdf_reader = PyPDF2.PdfReader(pdf_file)
-        pdf_page_count = len(pdf_reader.pages)
-    
-    processed_pages = get_processed_pages(record_id)
-    if len(processed_pages) == pdf_page_count:
-        print(f"✓ {pdf_link}: All {pdf_page_count} pages already processed")
-        return
-    
-    print(f"Total pages in PDF: {pdf_page_count}")
-    print(f"Pages already in database: {len(processed_pages)}")
-    
-    def process_single_page(page_num):
-        thread_name = threading.current_thread().name
-        print(f"{thread_name}: Converting page {page_num}/{pdf_page_count}")
+    try:
+        # Get record ID based on PDF filename
+        record_id = get_record_id(pdf_path)
+        print(f"Found record ID: {record_id}")
         
-        try:
-            # Convert single page with lower DPI and memory optimization
-            images = convert_from_path(
-                pdf_path,
-                dpi=300,  
-                first_page=page_num,
-                last_page=page_num,
-                thread_count=1,  
-            )
+        # Check total pages
+        with open(pdf_path, 'rb') as pdf_file:
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            pdf_page_count = len(pdf_reader.pages)
+        
+        processed_pages = get_processed_pages(record_id)
+        if len(processed_pages) == pdf_page_count:
+            print(f"✓ {pdf_path}: All {pdf_page_count} pages already processed")
+            return
+        
+        print(f"Total pages in PDF: {pdf_page_count}")
+        print(f"Pages already in database: {len(processed_pages)}")
+        
+        def process_single_page(page_num):
+            thread_name = threading.current_thread().name
+            print(f"{thread_name}: Converting page {page_num}/{pdf_page_count}")
             
-            if not images:
-                print(f"{thread_name}: Failed to convert page {page_num}")
-                return
-            
-            # First do OCR processing
-            page_num, error, ocr_result = process_page(images[0], page_num, pdf_link, record_id)
-            
-            # Then do Cloudinary upload
-            cloudinary_result = None
-            if not error:
-                cloudinary_result = upload_page_image(
-                    images[0], 
-                    f"{Path(pdf_path).stem}_page_{page_num}"
+            try:
+                # Convert single page with lower DPI and memory optimization
+                images = convert_from_path(
+                    pdf_path,
+                    dpi=300,  
+                    first_page=page_num,
+                    last_page=page_num,
+                    thread_count=1,  
                 )
-            
-            # Insert all results in one go
-            page_data = {
-                'parent_record_id': record_id,
-                'page_number': page_num,
-            }
-            
-            if error:
-                page_data.update({
-                    'ocr_result': f"ERROR: {error}",
-                    'error': True
-                })
-            else:
-                page_data.update({
-                    'ocr_result': ocr_result,
-                    'error': False
-                })
                 
-            if cloudinary_result:
-                page_data['cloudinary'] = cloudinary_result
+                if not images:
+                    print(f"{thread_name}: Failed to convert page {page_num}")
+                    return
                 
-            supabase.table('page').insert(page_data).execute()
-            
-            if error:
-                print(f"{thread_name}: Error processing page {page_num}: {error}")
-            else:
-                print(f"{thread_name}: Successfully processed page {page_num}")
-            
-            # Clear the image from memory immediately
-            images[0].close()
-            del images
-            
-            # Force garbage collection
-            import gc
-            gc.collect()
-            
-        except Exception as e:
-            print(f"{thread_name}: Error processing page {page_num}: {str(e)}")
-            # Force garbage collection on error too
-            gc.collect()
-    
-    # Get pages that need processing
-    pages_to_process = [
-        page_num for page_num in range(1, pdf_page_count + 1)
-        if page_num not in processed_pages
-    ]
-    
-    # Process pages with thread pool - increased max_workers since we're not doing concurrent operations per page
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        executor.map(process_single_page, pages_to_process)
+                # First do OCR processing
+                page_num, error, ocr_result = process_page(images[0], page_num, pdf_path, record_id)
+                
+                # Then do Cloudinary upload
+                cloudinary_result = None
+                if not error:
+                    cloudinary_result = upload_page_image(
+                        images[0], 
+                        f"{Path(pdf_path).stem}_page_{page_num}"
+                    )
+                
+                # Insert all results in one go
+                page_data = {
+                    'parent_record_id': record_id,
+                    'page_number': page_num,
+                }
+                
+                if error:
+                    page_data.update({
+                        'ocr_result': f"ERROR: {error}",
+                        'error': True
+                    })
+                else:
+                    page_data.update({
+                        'ocr_result': ocr_result,
+                        'error': False
+                    })
+                    
+                if cloudinary_result:
+                    page_data['cloudinary'] = cloudinary_result
+                    
+                supabase.table('page').insert(page_data).execute()
+                
+                if error:
+                    print(f"{thread_name}: Error processing page {page_num}: {error}")
+                else:
+                    print(f"{thread_name}: Successfully processed page {page_num}")
+                
+                # Clear the image from memory immediately
+                images[0].close()
+                del images
+                
+                # Force garbage collection
+                import gc
+                gc.collect()
+                
+            except Exception as e:
+                print(f"{thread_name}: Error processing page {page_num}: {str(e)}")
+                # Force garbage collection on error too
+                gc.collect()
         
-    print(f"Completed processing {pdf_link}")
+        # Get pages that need processing
+        pages_to_process = [
+            page_num for page_num in range(1, pdf_page_count + 1)
+            if page_num not in processed_pages
+        ]
+        
+        # Process pages with thread pool - increased max_workers since we're not doing concurrent operations per page
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            executor.map(process_single_page, pages_to_process)
+            
+        print(f"Completed processing {pdf_path}")
+        
+    except Exception as e:
+        print(f"Error processing PDF {pdf_path}: {str(e)}")
 
 def process_directory(directory: str = "downloaded-pdfs"):
     """Process all PDFs in a directory"""
