@@ -41,6 +41,7 @@
 	},
 	"dependencies": {
 		"@huggingface/transformers": "^3.4.0",
-		"@supabase/supabase-js": "^2.49.1"
+		"@supabase/supabase-js": "^2.49.1",
+		"dotenv": "^16.4.7"
 	}
 }
