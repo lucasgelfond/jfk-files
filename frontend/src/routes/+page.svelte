@@ -5,6 +5,7 @@
   import SearchResults from '../components/SearchResults.svelte';
   import { getRecordsSupabase, searchSupabaseEmbedSearch, supabaseResultsFromEmbedding } from '../utils/supabase';
 import {supabase} from '../utils/supabase';
+	import ChatBox from '../components/ChatBox.svelte';
 
   let input = '';
   let result: any[] = [];
@@ -228,6 +229,7 @@ import {supabase} from '../utils/supabase';
       <h1 class="text-4xl md:text-5xl font-bold mb-6 text-wrap text-white">
         The JFK Files 
       </h1>
+      <ChatBox modalStore={modalStore} />
       <h2 class="text-sm mb-5 text-gray-300 max-w-[60vh] leading-relaxed italic">
         <a href="http://jfkfiles.exposed" class="underline">www.jfkfiles.exposed</a>
       </h2>
