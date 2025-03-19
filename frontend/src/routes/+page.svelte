@@ -4,6 +4,7 @@
   import Modal from 'svelte-simple-modal';
   import SearchResults from '../components/SearchResults.svelte';
   import { getRecordsSupabase, searchSupabaseEmbedSearch, supabaseResultsFromEmbedding } from '../utils/supabase';
+import {supabase} from '../utils/supabase';
 
   let input = '';
   let result: any[] = [];
@@ -26,20 +27,79 @@
     const records = await getRecordsSupabase();
     recordMap.set(records);
   }
-
   async function handleSearch(query: string) {
     if (loading) return;
     if (!embeddingOnDevice) {
       loading = true;
       const results = await searchSupabaseEmbedSearch(query);
       result = results;
+      
+      // Log search usage
+      const browserInfo = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        cookieEnabled: navigator.cookieEnabled,
+        screenResolution: {
+          width: window.screen.width,
+          height: window.screen.height
+        },
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight
+        },
+        timestamp: new Date().toISOString(),
+        embeddingOnDevice: false
+      };
       loading = false;
+
+      try {
+        await supabase
+          .from('usage_log')
+          .insert([{ 
+            info: browserInfo,
+            query: query
+          }]);
+      } catch (error) {
+        console.error('Error logging usage:', error);
+      }
+
       return;
     }
     
     loading = true;
     try {
       worker.postMessage({ text: query });
+
+      // Log search usage
+      const browserInfo = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        cookieEnabled: navigator.cookieEnabled,
+        screenResolution: {
+          width: window.screen.width,
+          height: window.screen.height
+        },
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight
+        },
+        timestamp: new Date().toISOString(),
+        embeddingOnDevice: true
+      };
+
+      try {
+        await supabase
+          .from('usage_log')
+          .insert([{ 
+            info: browserInfo,
+            query: query
+          }]);
+      } catch (error) {
+        console.error('Error logging usage:', error);
+      }
+
     } catch (error) {
       console.error('Search error:', error);
       loading = false;
@@ -173,7 +233,7 @@
       </h2>
 
       <h3 class="text-sm mb-5 text-gray-300 max-w-[60vh] leading-relaxed">
-        Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>.
+        Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>. You can view the source <a href="https://github.com/lucasgelfond/jfk-files" class="text-blue-400 hover:underline">here</a>.
       </h3>
 
       <div class="max-w-[60vh]">
