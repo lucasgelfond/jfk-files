@@ -2,3 +2,4 @@
 processing/.env
 /processing/downloaded-pdfs
 .vercel
+/processing/ocr-text
