@@ -4,6 +4,7 @@
   import { bind } from 'svelte-simple-modal';
   import ResultModal from './ResultModal.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { v4 as uuidv4 } from 'uuid';
 
   // Props
   export let modalStore: any;
@@ -19,6 +20,7 @@
   let currentMessage = '';
   let loading = false;
   let recordMap: Record<string, any> = {};
+  let sessionId = uuidv4();
 
   const dispatch = createEventDispatcher();
 
@@ -91,7 +93,7 @@
         body: JSON.stringify({
           message: userMessage,
           mode: 'query',
-          sessionId: 'default-session',
+          sessionId: sessionId,
           attachments: []
         })
       });
@@ -181,7 +183,7 @@
       on:click={sendMessage}
       disabled={loading || !currentMessage.trim()}
     >
-      {loading ? 'Sending...' : 'Send'}
+      {loading ? 'Loading...' : 'Send'}
     </button>
   </div>
 </div>
