@@ -3,6 +3,7 @@ from pathlib import Path
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import requests
+import time
 
 # Load environment variables and initialize Supabase client
 load_dotenv()
@@ -16,14 +17,12 @@ BASE_URL ="https://anythingllm-production-047a.up.railway.app"
 ANYTHING_LLM_AUTH = os.getenv('ANYTHING_LLM_AUTHORIZATION')
 
 def upload_pending_files():
-    # Get records that haven't been uploaded to AnythingLLM
     records = supabase.table('record')\
         .select('*')\
         .is_('in_anything_llm', 'null')\
         .execute()
 
     if not records.data:
-        print("No pending files to upload")
         return
 
     ocr_dir = Path("ocr-text")
@@ -34,39 +33,56 @@ def upload_pending_files():
         file_path = ocr_dir / f"{filename}.txt"
         
         if not file_path.exists():
-            print(f"File not found for {record_number}, skipping...")
             continue
             
-        print(f"Uploading {filename} to AnythingLLM...")
-        
         try:
-            # Prepare the file upload
             files = {
                 'file': (filename, open(file_path, 'rb'), 'text/plain')
             }
             
-            # Make the upload request
-            response = requests.post(
+            upload_response = requests.post(
                 f"{BASE_URL}/api/v1/document/upload",
                 files=files,
                 headers={
                     'Authorization': f'Bearer {ANYTHING_LLM_AUTH}'
                 }
             )
-            
-            if response.status_code == 200:
-                # Update the database to mark as uploaded
-                supabase.table('record')\
-                    .update({'in_anything_llm': True})\
-                    .eq('id', record['id'])\
-                    .execute()
-                print(f"Successfully uploaded {filename}")
+            if upload_response.status_code == 200:
+                try:
+                    upload_result = upload_response.json()
+                    document = upload_result['documents'][0]
+                    document_path = f"custom-documents/{document['id']}.json"
+                except (ValueError, KeyError, IndexError):
+                    continue
+                
+                update_payload = {
+                    "adds": [document_path],
+                    "deletes": []
+                }
+                
+                embeddings_response = requests.post(
+                    f"{BASE_URL}/api/v1/workspace/jfk/update-embeddings",
+                    json=update_payload,
+                    headers={
+                        'Authorization': f'Bearer {ANYTHING_LLM_AUTH}',
+                        'Content-Type': 'application/json'
+                    }
+                )
+                
+                if embeddings_response.status_code == 200:
+                    supabase.table('record')\
+                        .update({'in_anything_llm': True})\
+                        .eq('id', record['id'])\
+                        .execute()
+                    print(f"Successfully uploaded and embedded {filename}")
+                    time.sleep(10)
+                else:
+                    print(f"Failed to upload and embed {filename}")
             else:
-                print(f"Failed to upload {filename}: {response.status_code}")
-                print(response.json())
+                print(f"Failed to upload and embed {filename}")
                 
         except Exception as e:
-            print(f"Error uploading {filename}: {str(e)}")
+            print(f"Failed to upload and embed {filename}")
 
 if __name__ == "__main__":
     upload_pending_files()
