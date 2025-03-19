@@ -4,3 +4,5 @@ processing/.env
 .vercel
 /processing/ocr-text
 todo.txt
+demo-fixed.mp4
+demo.gif
