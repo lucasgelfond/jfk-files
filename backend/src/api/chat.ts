@@ -3,10 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const IS_PRODUCTION = !process.env.IS_DEV;
-const BASE_URL = IS_PRODUCTION
-  ? "http://anythingllm.railway.internal"
-  : "https://anythingllm-production-047a.up.railway.app";
+const BASE_URL = process.env.BASE_URL;
 const router = express.Router();
 
 router.post("/", async (req, res) => {
