@@ -299,7 +299,7 @@ import {supabase} from '../utils/supabase';
 
 <!-- Update the chat container -->
 {#if showChat}
-  <div class="fixed bottom-8 right-4 z-50 w-[400px] h-[500px] bg-black rounded-lg shadow-lg overflow-hidden border border-white">
+  <div class="fixed bottom-8 right-4 z-50 w-[400px] h-[500px] md:h-[500px] sm:h-[600px] bg-black rounded-lg shadow-lg overflow-hidden border border-white">
     <div class="flex justify-between items-center p-2 border-b border-white/20">
       <h3 class="text-white font-semibold">Chat</h3>
       <button 
@@ -309,7 +309,7 @@ import {supabase} from '../utils/supabase';
         ×
       </button>
     </div>
-    <div class="h-[calc(500px-40px)]">
+    <div class="h-[calc(500px-40px)] md:h-[calc(500px-40px)] sm:h-[calc(600px-40px)]">
       <ChatBox 
         modalStore={modalStore} 
         initialSearch={input}
