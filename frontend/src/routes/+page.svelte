@@ -169,7 +169,7 @@
         The JFK Files 
       </h1>
 
-      <h2 class="text-sm mb-3 text-gray-300 max-w-[60vh] leading-relaxed">
+      <h2 class="text-sm mb-5 text-gray-300 max-w-[60vh] leading-relaxed">
         Original documents sourced from the <a href="https://www.archives.gov/research/jfk/release-2025" class="text-blue-400 hover:underline">National Archives</a>. Site built by <a href="https://lucasgelfond.online" class="text-blue-400 hover:underline">Lucas Gelfond</a>.
       </h2>
 
