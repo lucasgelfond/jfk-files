@@ -24,6 +24,14 @@ import {supabase} from '../utils/supabase';
 
   let embeddingOnDevice = false;
 
+  // Add this new state
+  let showChat = false;
+
+  // Add this function to toggle chat
+  function toggleChat() {
+    showChat = !showChat;
+  }
+
   async function fetchIssues() {
     const records = await getRecordsSupabase();
     recordMap.set(records);
@@ -229,7 +237,6 @@ import {supabase} from '../utils/supabase';
       <h1 class="text-4xl md:text-5xl font-bold mb-6 text-wrap text-white">
         The JFK Files 
       </h1>
-      <ChatBox modalStore={modalStore} />
       <h2 class="text-sm mb-5 text-gray-300 max-w-[60vh] leading-relaxed italic">
         <a href="http://jfkfiles.exposed" class="underline">www.jfkfiles.exposed</a>
       </h2>
@@ -259,6 +266,12 @@ import {supabase} from '../utils/supabase';
               Search
             {/if}
           </button>
+          <button 
+            class="border border-white text-white px-4 py-1 rounded hover:bg-white hover:text-black transition-colors"
+            on:click={toggleChat}
+          >
+            Open Chat
+          </button>
         </div>
       </div>
     </div>
@@ -274,3 +287,40 @@ import {supabase} from '../utils/supabase';
     </div>
   </div>
 </Modal>
+
+<!-- Update the chat container -->
+{#if showChat}
+  <div class="fixed bottom-8 right-4 z-50 w-[400px] h-[500px] bg-black rounded-lg shadow-lg overflow-hidden border border-white">
+    <div class="flex justify-between items-center p-2 border-b border-white/20">
+      <h3 class="text-white font-semibold">Chat</h3>
+      <button 
+        class="text-white hover:text-gray-300"
+        on:click={toggleChat}
+      >
+        ×
+      </button>
+    </div>
+    <div class="h-[calc(500px-40px)]">
+      <ChatBox modalStore={modalStore} />
+    </div>
+  </div>
+{/if}
+
+<!-- Add floating chat button when chat is not open -->
+{#if !showChat}
+  <button
+    class="fixed bottom-4 right-4 z-50 bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
+    on:click={toggleChat}
+  >
+    💬
+  </button>
+{/if}
+
+<!-- Add the AnythingLLM script -->
+<svelte:head>
+  <script
+    data-embed-id="c2a28c27-f820-468e-b5f9-0c58022db635"
+    data-base-api-url="https://anythingllm-production-047a.up.railway.app/api/embed"
+    src="https://anythingllm-production-047a.up.railway.app/embed/anythingllm-chat-widget.min.js">
+  </script>
+</svelte:head>
