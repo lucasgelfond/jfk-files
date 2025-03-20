@@ -18,6 +18,8 @@ router.post("/", async (req, res) => {
       body: JSON.stringify(req.body),
     });
 
+    console.log({ req });
+
     const data = await response.json();
     res.json(data);
   } catch (error) {
